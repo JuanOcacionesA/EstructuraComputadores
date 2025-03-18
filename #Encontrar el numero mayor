@@ -1,0 +1,72 @@
+#Encontrar el numero mayor
+.data
+resultMsg: .asciiz "La numero mayor es: "     # Define el mensaje para mostrar antes del resultado
+array:  .word 6, 12, 7, 3, 8       # Array of numbers
+length: .word 5                    # Length of the array
+result: .word 0                    # Variable to store the largest number
+msg:      .asciiz "El mayor numero es: "  # Mensaje a imprimir
+newline:  .asciiz "\n"                # Salto de línea
+
+
+    .text
+    .globl main
+
+main:
+    # Load the address of the array and its length
+    la   $t0, array      # Load address of array into $t0
+    lw   $t1, length     # Load length of array into $t1 (5)
+    
+    # Initialize the largest number (first element of array)
+    lw   $t2, 0($t0)     # Load first element of array into $t2 (largest number so far)
+    
+    # Initialize the loop counter (i = 1)
+    li   $t3, 1          # $t3 is the counter (starting from 1)
+    
+loop:
+    # Check if we have processed all elements
+    bge  $t3, $t1, done  # If counter $t3 >= length, exit loop
+    
+    # Load the next element of the array
+    lw   $t4, 0($t0)     # Load the current element of the array into $t4
+    
+    # Compare current element with the largest number so far
+    bgt  $t4, $t2, update_largest  # If current element > largest number, update largest
+    
+    # Move to the next element
+    addi $t0, $t0, 4     # Move to the next element (4 bytes ahead)
+    addi $t3, $t3, 1     # Increment loop counter
+    j loop               # Jump back to the loop start
+    
+update_largest:
+    move $t2, $t4        # Update largest number to the current element
+    addi $t0, $t0, 4     # Move to the next element (4 bytes ahead)
+    addi $t3, $t3, 1     # Increment loop counter
+    j loop               # Jump back to the loop start
+
+done:
+    # Store the result (largest number) in the result variable
+    sw   $t2, result     # Store the largest number in memory
+    
+     # Imprimir el mensaje
+    li   $v0, 4           # Código de servicio para imprimir cadena
+    la   $a0, msg
+    syscall
+
+    # Imprimir el mayor número
+    li   $v0, 1           # Código de servicio para imprimir entero
+    move $a0, $t2
+    syscall
+
+    # Imprimir un salto de línea
+    li   $v0, 4
+    la   $a0, newline
+    syscall
+    
+    # Imprimir el resultado (el número más grande)
+    #li   $v0, 1          # Código de servicio para imprimir un número entero
+    #move $a0, $t2        # Mover el número más grande a $a0 (argumento para impresión)
+    #syscall              # Llamada al sistema para imprimir
+
+    # Exit program (exit syscall)
+    li   $v0, 10         # Load the exit code into $v0
+    syscall              # Make syscall to exit
