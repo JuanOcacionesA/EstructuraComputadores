@@ -1,0 +1,63 @@
+.data
+    # Definición del arreglo, número de elementos y variables para impresión
+    array:    .word  7, 2, 5, 1, 9      # Arreglo de números
+    n:        .word  5                    # Número de elementos del arreglo
+    min:      .word  0                    # Variable para almacenar el menor número
+    msg:      .asciiz "El menor numero es: "  # Mensaje a imprimir
+    newline:  .asciiz "\n"                # Salto de línea
+.text
+    .globl main
+main:
+    # Cargar la dirección base del arreglo y el número de elementos
+    la   $t0, array        # $t0 = dirección base de array
+    lw   $t1, n            # $t1 = número de elementos
+
+    # Inicializar el menor con el primer elemento del arreglo
+    lw   $t2, 0($t0)       # $t2 = min (valor inicial: array[0])
+    addi $t3, $zero, 1     # $t3 = contador (i = 1)
+
+loop:
+    # Si i >= número de elementos, terminar el ciclo
+    bge  $t3, $t1, fin
+
+    # Calcular la dirección del elemento array
+    sll  $t4, $t3, 2       # $t4 = i * 4 
+    add  $t5, $t0, $t4     # $t5 = dirección de array
+    lw   $t6, 0($t5)       # $t6 = array[i]
+
+    # Comparar el elemento actual con el mínimo actual
+    blt  $t6, $t2, actualiza_min  # Si array[i] < min, actualizar
+
+    # Incrementar contador y continuar el ciclo
+    addi $t3, $t3, 1
+    j    loop
+
+actualiza_min:
+    move $t2, $t6         # Actualiza el mínimo con el valor actual
+    addi $t3, $t3, 1      # Incrementa el contador
+    j    loop
+
+fin:
+    # Almacenar el menor número encontrado en la variable 'min'
+    la   $t7, min
+    sw   $t2, 0($t7)
+
+    # Imprimir el mensaje
+    li   $v0, 4           # Código de servicio para imprimir cadena
+    la   $a0, msg         # Imprimir el mensaje 
+    syscall
+
+    # Imprimir el menor número
+    li   $v0, 1           # Código de servicio para imprimir entero
+    move $a0, $t2
+    syscall
+
+    # Imprimir un salto de línea
+    li   $v0, 4
+    la   $a0, newline
+    syscall
+
+    # Finalizar el programa
+    li   $v0, 10          # Cargar el codigo de salida en $v0
+    syscall              # Hacer la llamada de salida
+    
