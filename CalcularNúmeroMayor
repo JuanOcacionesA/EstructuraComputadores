@@ -1,0 +1,66 @@
+    .data
+resultMsg: .asciiz "La numero mayor es: "     # Define el mensaje para mostrar antes del resultado
+array:  .word 6, 12, 17, 13, 8       # Numeros del array
+length: .word 5                    # Longitud del array
+result: .word 0                    # Variable que guarda el numero mayor
+msg:      .asciiz "El mayor numero es: "  # Mensaje a imprimir
+newline:  .asciiz "\n"                # Salto de línea
+
+
+    .text
+    .globl main
+
+main:
+    # Cargar la dirección del array y su longitud
+    la   $t0, array      # Cargar la dirección del array en $t0
+    lw   $t1, length     # Cargar la longitud del array en $t1 (5)
+    
+    # Iniciar el Array con el primer elemento a evaluar (first element of array)
+    lw   $t2, 0($t0)     # Cargar el primer elemento del array en $t2 (Inicia como el numero mayor)
+    
+    # Iniciar el contador de cada ciclo (i = 1)
+    li   $t3, 1          # En $t3 está el contador de los elementos del array (Inicia en 1)
+    
+loop:
+    # Revisar si ya se procesaron todos los elementos del array
+    bge  $t3, $t1, done  # Si el contador en $t3 es mayor o igual (>=) que  la longitud del array, salir del ciclo
+    
+    # Cargar el siguiente elemento en el array
+    lw   $t4, 0($t0)     # Cargar este nuevo elemento del array en $t4
+    
+    # Comparar el nuevo elemento contra el numero que hasta ahora era el mayor (El primer numero se inicia como el mayor)
+    bgt  $t4, $t2, actualizar_mayor  # Si el nuevo numero es mayor(>)que el numero que estaba guardado como mayor, actualizar $t2 
+    
+    # Ir al siguiente elemento del array
+    addi $t0, $t0, 4     # Ir al siguiente elemento 
+    addi $t3, $t3, 1     # Incrementar el contador de elementos
+    j loop               # Salto del ciclo
+    
+actualizar_mayor:
+    move $t2, $t4        # Actualizar el numero mayor con el resultado de la comparación con el nuevo elemento evaluado
+    addi $t0, $t0, 4     # Ir al siguiente elemento
+    addi $t3, $t3, 1     # Incrementar el contador de elementos
+    j loop               # Salto del ciclo
+
+done:
+    # Guardar el resultado de la comparación del numero mayor en la variable $t2 
+    sw   $t2, result     # Guardar el resultado del mayor numero en el registro $t2 
+    
+     # Imprimir el mensaje
+    li   $v0, 4           # Código de servicio para imprimir cadena
+    la   $a0, msg         # Llamar al mensaje a imprimir
+    syscall
+
+    # Imprimir el mayor número
+    li   $v0, 1           # Código de servicio para imprimir entero
+    move $a0, $t2
+    syscall
+
+    # Imprimir un salto de línea
+    li   $v0, 4
+    la   $a0, newline
+    syscall
+    
+     # Salir del programa (exit syscall)
+    li   $v0, 10         # Cargar el codigo de salida en $v0
+    syscall              # Hacer la llamada de salida
