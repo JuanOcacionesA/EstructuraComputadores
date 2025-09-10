@@ -1,0 +1,72 @@
+.data
+    msgCantidad:  .asciiz "Ingrese la cantidad de numeros de la serie Fibonacci a generar: "
+    msgSerie:     .asciiz "La serie Fibonacci es: "
+    msgSuma:      .asciiz "\nLa suma de los numeros de la serie es: "
+
+.text
+.globl main
+
+main:
+    # Pedir cantidad de numeros
+    li $v0, 4
+    la $a0, msgCantidad
+    syscall
+
+    li $v0, 5       # leer entero
+    syscall
+    move $t0, $v0   # $t0 = cantidad de terminos
+
+    # Inicializar variables
+    li $t1, 0       # primer numero = 0
+    li $t2, 1       # segundo numero = 1
+    li $t3, 0       # suma acumulada
+    li $t4, 0       # contador
+
+    # Imprimir mensaje serie
+    li $v0, 4
+    la $a0, msgSerie
+    syscall
+
+fibonacci_loop:
+    beq $t4, $t0, mostrar_suma   # si contador == cantidad → terminar
+
+    # Imprimir numero actual (t1)
+    li $v0, 1
+    move $a0, $t1
+    syscall
+
+    # Imprimir una coma y espacio si no es el ultimo
+    addi $t4, $t4, 1
+    beq $t4, $t0, no_coma   # si ya es el ultimo, no poner coma
+    li $v0, 11
+    li $a0, ','
+    syscall
+    li $v0, 11
+    li $a0, ' '
+    syscall
+
+no_coma:
+    # Acumular suma
+    add $t3, $t3, $t1
+
+    # Calcular siguiente numero
+    add $t5, $t1, $t2   # t5 = t1 + t2
+    move $t1, $t2       # actualizar: t1 = t2
+    move $t2, $t5       # actualizar: t2 = t5
+
+    j fibonacci_loop
+
+mostrar_suma:
+    # Imprimir mensaje suma
+    li $v0, 4
+    la $a0, msgSuma
+    syscall
+
+    # Imprimir resultado suma
+    li $v0, 1
+    move $a0, $t3
+    syscall
+
+    # Finalizar
+    li $v0, 10
+    syscall

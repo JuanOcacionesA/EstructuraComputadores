@@ -1,0 +1,75 @@
+.data
+    msgCantidad: .asciiz "Ingrese la cantidad de numeros a comparar (min 3 - max 5): "
+    msgInvalido: .asciiz "Cantidad invalida. Debe ser entre 3 y 5.\n"
+    msgNumero:   .asciiz "Ingrese un numero: "
+    msgResultado:.asciiz "El menor numero ingresado es: "
+
+.text
+.globl main
+
+main:
+    # Pedir cantidad de numeros
+    li $v0, 4
+    la $a0, msgCantidad
+    syscall
+
+    li $v0, 5       # leer entero
+    syscall
+    move $t0, $v0   # $t0 = cantidad
+
+    # Validar rango (3 <= n <= 5)
+    blt $t0, 3, invalid
+    bgt $t0, 5, invalid
+
+    # Ingreso del primer número
+    li $v0, 4
+    la $a0, msgNumero
+    syscall
+
+    # Leer el número
+    li $v0, 5
+    syscall
+    move $t1, $v0   # $t1 = primer número (asumimos que es el menor inicial)
+
+    li $t2, 1       # contador = 1 (ya tenemos 1 numero)
+
+leer_numeros:
+    beq $t2, $t0, mostrar   # si contador == cantidad → mostrar resultado
+
+    # Pedir otro numero
+    li $v0, 4
+    la $a0, msgNumero
+    syscall
+
+    li $v0, 5
+    syscall
+    move $t3, $v0   # $t3 = número actual
+
+    # Comparar si es menor
+    bge $t3, $t1, no_cambio
+    move $t1, $t3   # actualizar menor
+
+no_cambio:
+    addi $t2, $t2, 1
+    j leer_numeros
+
+mostrar:
+    # Imprimir resultado
+    li $v0, 4
+    la $a0, msgResultado
+    syscall
+
+    li $v0, 1
+    move $a0, $t1
+    syscall
+
+    li $v0, 10      # salir
+    syscall
+
+invalid:
+    li $v0, 4
+    la $a0, msgInvalido
+    syscall
+    j main
+    
+    
